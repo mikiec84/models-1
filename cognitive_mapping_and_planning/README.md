@@ -55,9 +55,12 @@ citing the following paper:
     replace `SwiftshaderRenderer` in `render/swiftshader_renderer.py` with
     bindings to your renderer. 
     ```Shell
+    # Additional dependencies that you may require.
+    # sudo apt-get install libx11-dev cmake libxext-dev
     mkdir -p deps
     git clone --recursive https://github.com/google/swiftshader.git deps/swiftshader-src
     cd deps/swiftshader-src && git checkout 91da6b00584afd7dcaed66da88e2b617429b3950
+    git submodule init && git submodule update
     mkdir build && cd build && cmake .. && make -j 16 libEGL libGLESv2
     cd ../../../
     cp deps/swiftshader-src/build/libEGL* libEGL.so.1
