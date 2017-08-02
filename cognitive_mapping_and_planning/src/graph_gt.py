@@ -30,9 +30,10 @@ class Graph():
       pred = np.array(pred.get_array())
       return dist, pred
 
-  # Compute shortest path from all nodes to or from all source nodes
+  # Compute shortest distance from all nodes to or from the set of all source
+  # nodes.
   def get_distance_node_list(self, source_nodes, direction, weights=None):
-    gtG_ = gt.Graph(gtG)
+    gtG_ = gt.Graph(self.gtG)
     v = gtG_.add_vertex()
     
     if weights is not None:

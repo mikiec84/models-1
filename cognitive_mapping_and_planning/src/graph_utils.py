@@ -171,7 +171,7 @@ def label_nodes_with_class_geodesic(nodes_xyt, class_maps, pix, traversible,
   for i in range(n_classes):
     # class_node_ids = np.where(class_maps__.ravel() == i)[0]
     class_node_ids = np.where(class_maps[:,:,i].ravel() > 0)[0]
-    dist_i = get_distance_node_list(g, class_node_ids, 'to', weights='wts')
+    dist_i = g.get_distance_node_list(class_node_ids, 'to', weights='wts')
     class_dist[:,:,i] = np.reshape(dist_i, class_dist[:,:,i].shape)
   class_map_geodesic = (class_dist <= pix)
   class_map_geodesic = np.reshape(class_map_geodesic, [-1, n_classes])
