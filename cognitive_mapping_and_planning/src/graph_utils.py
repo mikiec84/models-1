@@ -350,9 +350,8 @@ def get_hardness_distribution(gtG, max_dist, min_dist, rng, trials, bins, nodes,
   gt_dists = []; h_dists = [];
   for i in range(trials):
     end_node_id = rng.choice(num_nodes)
-    gt_dist = gt.topology.shortest_distance(gt.GraphView(gtG, reversed=True),
-                                            source=gtG.vertex(end_node_id),
-                                            target=None, max_dist=max_dist)
+    gt_dist = gtG.shortest_distance(source=end_node_id, target=None, 
+      max_dist=max_dist, reversed=True)
     gt_dist = np.array(gt_dist.get_array())
     ind = np.where(np.logical_and(gt_dist <= max_dist, gt_dist >= min_dist))[0]
     gt_dist = gt_dist[ind]
@@ -382,11 +381,9 @@ def rng_next_goal_rejection_sampling(start_node_ids, batch_size, gtG, rng,
         start_node_id = rng.choice(num_nodes)
       else:
         start_node_id = start_node_ids[i]
-
-      gt_dist = gt.topology.shortest_distance(
-          gt.GraphView(gtG, reversed=False), source=start_node_id, target=None,
-          max_dist=max_dist)
-      gt_dist = np.array(gt_dist.get_array())
+      
+      gt_dist = gtG.shortest_distance(source=start_node_id, target=None,
+        max_dist=max_dist, reversed=False)
       ind = np.where(np.logical_and(gt_dist <= max_dist, gt_dist >= min_dist))[0]
       ind = rng.permutation(ind)
       gt_dist = gt_dist[ind]*1.
@@ -403,12 +400,8 @@ def rng_next_goal_rejection_sampling(start_node_ids, batch_size, gtG, rng,
         done = True
 
     # Compute distance from end node to all nodes, to return.
-    dist, pred_map = gt.topology.shortest_distance(
-        gt.GraphView(gtG, reversed=True), source=end_node_id, target=None,
-        max_dist=max_dist_to_compute, pred_map=True)
-    dist = np.array(dist.get_array())
-    pred_map = np.array(pred_map.get_array())
-
+    dist, pred_map = gtG.shortest_distance(source=end_node_id, target=None, 
+      max_dist=max_dist_to_compute, pred_map=True, reversed=True)
     hardnesss.append(hardness); dists.append(dist); pred_maps.append(pred_map);
     start_node_ids_.append(start_node_id); end_node_ids.append(end_node_id);
     gt_dists.append(gt_dist);
@@ -427,10 +420,8 @@ def rng_next_goal(start_node_ids, batch_size, gtG, rng, max_dist,
     room_id = node_room_ids[start_node_ids[i]]
     # Compute distances.
     if dists_from_start_node == None:
-      dist, pred_map = gt.topology.shortest_distance(
-        gt.GraphView(gtG, reversed=False), source=gtG.vertex(start_node_ids[i]),
-        target=None, max_dist=max_dist_to_compute, pred_map=True)
-      dist = np.array(dist.get_array())
+      dist = gtG.shortest_distance(source=start_node_ids[i], target=None,
+        max_dist=max_dist_to_compute, pred_map=True, reversed=False)
     else:
       dist = dists_from_start_node[i]
 
@@ -453,11 +444,9 @@ def rng_next_goal(start_node_ids, batch_size, gtG, rng, max_dist,
       logging.error('Did not find any good nodes.')
 
     # Compute distance to this new goal for doing distance queries.
-    dist, pred_map = gt.topology.shortest_distance(
-        gt.GraphView(gtG, reversed=True), source=gtG.vertex(end_node_id),
-        target=None, max_dist=max_dist_to_compute, pred_map=True)
-    dist = np.array(dist.get_array())
-    pred_map = np.array(pred_map.get_array())
+    dist, pred_map = gtG.shortest_distance(
+      source=end_node_id, target=None, max_dist=max_dist_to_compute,
+      pred_map=True, reversed=True)
 
     dists.append(dist)
     pred_maps.append(pred_map)
@@ -483,11 +472,9 @@ def rng_room_to_room(batch_size, gtG, rng, max_dist, max_dist_to_compute,
     end_node_ids.append(end_node_id)
 
     # Compute distances.
-    dist, pred_map = gt.topology.shortest_distance(
-        gt.GraphView(gtG, reversed=True), source=gtG.vertex(end_node_id),
-        target=None, max_dist=max_dist_to_compute, pred_map=True)
-    dist = np.array(dist.get_array())
-    pred_map = np.array(pred_map.get_array())
+    dist, pred_map = gtG.shortest_distance(
+      reversed=True, source=end_node_id, target=None, 
+      max_dist=max_dist_to_compute, pred_map=True)
     dists.append(dist)
     pred_maps.append(pred_map)
 
@@ -529,11 +516,8 @@ def rng_target_dist_field(batch_size, gtG, rng, max_dist, max_dist_to_compute,
                             replace=False).tolist()
 
   for i in range(batch_size):
-    dist, pred_map = gt.topology.shortest_distance(
-        gt.GraphView(gtG, reversed=True), source=gtG.vertex(end_node_ids[i]),
-        target=None, max_dist=max_dist_to_compute, pred_map=True)
-    dist = np.array(dist.get_array())
-    pred_map = np.array(pred_map.get_array())
+    dist, pred_map = gtG.shortest_distance(source=end_node_ids[i], target=None,
+      max_dist=max_dist_to_compute, pred_map=True, reversed=True)
     dists.append(dist)
     pred_maps.append(pred_map)
 
