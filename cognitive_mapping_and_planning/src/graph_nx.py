@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 from src import utils
 import networkx as nx
 
