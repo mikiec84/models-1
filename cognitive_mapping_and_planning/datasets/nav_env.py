@@ -736,10 +736,8 @@ def _nav_env_reset_helper(type, rng, nodes, batch_size, gtG, max_dist,
     goal_node_ids.append(start_node_ids)
     dist = []
     for i in range(batch_size):
-      dist_ = gt.topology.shortest_distance(
-          gt.GraphView(gtG, reversed=True),
-          source=gtG.vertex(start_node_ids[i]), target=None)
-      dist_ = np.array(dist_.get_array())
+      dist_ = gtG.shortest_distance(reversed=True, source=start_node_ids[i], 
+        target=None)
       dist.append(dist_)
     dists.append(dist)
     target_class = None
