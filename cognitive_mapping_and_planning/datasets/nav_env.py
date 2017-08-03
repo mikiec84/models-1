@@ -47,7 +47,6 @@ import src.utils as utils
 import src.graph_utils as gu
 import src.map_utils as mu
 import src.depth_utils as du
-from src import GraphGT as Graph
 import render.swiftshader_renderer as sru
 from render.swiftshader_renderer import SwiftshaderRenderer
 import cv2
