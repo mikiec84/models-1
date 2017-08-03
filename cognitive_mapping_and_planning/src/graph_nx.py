@@ -20,18 +20,52 @@ def generate_graph(valid_fn_vec=None, sc=1., n_ori=6,
     nodes_id[i] = i 
   d = dict(itertools.izip(nodes_list, nodes_id))
   nodes_to_id = d
-  return Graph(nxG), nodes_array, nodes_to_id
+  nxG_ = nx.relabel_nodes(nxG, mapping=d)
+  return Graph(nxG_), nodes_array, nodes_to_id
 
 class Graph():
   def __init__(self, nxG):
     self.nxG = nxG
+    self.num_vertex = len(self.nxG.nodes())
+    self.reversed_nxG = None
 
+  def to_array(self, d, num_vertex, init_val):
+    out = init_val * np.ones((num_vertex, ), dtype=type(init_val))
+    for k, v in d.items():
+      out[k] = v[0]
+    return out
+  
   def shortest_distance(self, source, target, weights=None, reversed=False, 
     pred_map=False, max_dist=None):
-    raise NotImplemented
-
+    assert(weights is None), 'Only supports unweighted graphs right now.'
+    if reversed:
+      if self.reversed_nxG is None:
+        self.reversed_nxG = self.nxG.reverse()
+      g = self.reversed_nxG
+    else:
+      g = self.nxG
+    assert(target is None)
+    assert(pred_map is None)
+    pred, dist = nx.dijkstra_predecessor_and_distance(g, source, cutoff=max_dist)
+    dist = self.to_array(dist, self.num_vertex, np.int32(np.iinfo(np.int32).max))
+    return dist
+  
   def get_distance_node_list(self, source_nodes, direction, weights=None):
     raise NotImplemented
+
+  def num_edges(self):
+    return len(self.nxG.edges())
+
+  def num_vertices(self):
+    return len(self.nxG.nodes())
+  
+  def get_neighbours(self, c):
+    self.nxG.neighbors(0)
+    neigh = self.gtG.vertex(c).out_neighbours()
+    neigh = [int(x) for x in neigh]
+    neigh_edge = self.gtG.vertex(c).out_edges()
+    neigh_action = [self.gtG.ep['action'][e] for e in neigh_edge]
+    return neigh, neigh_edge, neigh_action 
 
 def generate_graph_helper(valid_fn_vec=None, sc=1., n_ori=6,
   starting_location=(0, 0, 0), vis=False, directed=True):
