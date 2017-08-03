@@ -186,6 +186,3 @@ def label_nodes_with_class_geodesic(nodes_xyt, class_maps, pix, traversible,
   node_class_label = class_map_geodesic[ind[:,0],:]
   class_map_geodesic = class_dist <= pix
   return class_map_geodesic, node_class_label
-
-
-
