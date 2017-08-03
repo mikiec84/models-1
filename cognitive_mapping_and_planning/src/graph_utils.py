@@ -20,6 +20,8 @@ import numpy as np
 import itertools
 import src.utils as utils
 
+# Note: Use graph_gt for using graph_tool library for graph queries, and
+# graph_nx for using networkx. Uncomment appropriately.
 import src.graph_gt as graph_lib
 # import src.graph_nx as graph_lib
 
