@@ -85,7 +85,7 @@ class Graph():
     return dist
 
 # Functions for semantically labelling nodes in the traversal graph.
-def generate_lattice(sz_x, sz_y):
+def _generate_lattice(sz_x, sz_y):
   """Generates a lattice with sz_x vertices along x and sz_y vertices along y
   direction Each of these vertices is step_size distance apart. Origin is at
   (0,0).  """
@@ -95,7 +95,7 @@ def generate_lattice(sz_x, sz_y):
   nodes = np.concatenate((x,y), axis=1)
   return g, nodes
 
-def add_diagonal_edges(g, nodes, sz_x, sz_y, edge_len):
+def _add_diagonal_edges(g, nodes, sz_x, sz_y, edge_len):
   offset = [sz_x+1, sz_x-1]
   for o in offset:
     s = np.arange(nodes.shape[0]-o-1)
@@ -108,13 +108,13 @@ def add_diagonal_edges(g, nodes, sz_x, sz_y, edge_len):
       e = g.add_edge(st[i,0], st[i,1], add_missing=False)
       g.ep['wts'][e] = edge_len
 
-def convert_traversible_to_graph(traversible, ff_cost=1., fo_cost=1.,
+def _convert_traversible_to_graph(traversible, ff_cost=1., fo_cost=1.,
                                  oo_cost=1., connectivity=4):
   assert(connectivity == 4 or connectivity == 8)
 
   sz_x = traversible.shape[1]
   sz_y = traversible.shape[0]
-  g, nodes = generate_lattice(sz_x, sz_y)
+  g, nodes = _generate_lattice(sz_x, sz_y)
 
   # Assign costs.
   edge_wts = g.new_edge_property('float')
@@ -123,7 +123,7 @@ def convert_traversible_to_graph(traversible, ff_cost=1., fo_cost=1.,
   edge_wts.get_array()[:] = wts
 
   if connectivity == 8:
-    add_diagonal_edges(g, nodes, sz_x, sz_y, np.sqrt(2.))
+    _add_diagonal_edges(g, nodes, sz_x, sz_y, np.sqrt(2.))
 
   se = np.array([[int(e.source()), int(e.target())] for e in g.edges()])
   s_xy = nodes[se[:,0]]
@@ -145,37 +145,8 @@ def convert_traversible_to_graph(traversible, ff_cost=1., fo_cost=1.,
   # edge_wts.get_array()[:] = d*wts 
   return g, nodes
 
-def label_nodes_with_class(nodes_xyt, class_maps, pix):
-  """
-  Returns: 
-    class_maps__: one-hot class_map for each class.
-    node_class_label: one-hot class_map for each class, nodes_xyt.shape[0] x n_classes
-  """
-  # Assign each pixel to a node.
-  selem = skimage.morphology.disk(pix)
-  class_maps_ = class_maps*1.
-  for i in range(class_maps.shape[2]):
-    class_maps_[:,:,i] = skimage.morphology.dilation(class_maps[:,:,i]*1, selem)
-  class_maps__ = np.argmax(class_maps_, axis=2)
-  class_maps__[np.max(class_maps_, axis=2) == 0] = -1
-
-  # For each node pick out the label from this class map.
-  x = np.round(nodes_xyt[:,[0]]).astype(np.int32)
-  y = np.round(nodes_xyt[:,[1]]).astype(np.int32)
-  ind = np.ravel_multi_index((y,x), class_maps__.shape)
-  node_class_label = class_maps__.ravel()[ind][:,0]
-
-  # Convert to one hot versions.
-  class_maps_one_hot = np.zeros(class_maps.shape, dtype=np.bool)
-  node_class_label_one_hot = np.zeros((node_class_label.shape[0], class_maps.shape[2]), dtype=np.bool)
-  for i in range(class_maps.shape[2]):
-    class_maps_one_hot[:,:,i] = class_maps__ == i 
-    node_class_label_one_hot[:,i] = node_class_label == i
-  return class_maps_one_hot, node_class_label_one_hot
-
 def label_nodes_with_class_geodesic(nodes_xyt, class_maps, pix, traversible,
-                                    ff_cost=1., fo_cost=1., oo_cost=1.,
-                                    connectivity=4):
+    ff_cost=1., fo_cost=1., oo_cost=1., connectivity=4):
   """Labels nodes in nodes_xyt with class labels using geodesic distance as
   defined by traversible from class_maps.
   Inputs:
@@ -187,9 +158,8 @@ def label_nodes_with_class_geodesic(nodes_xyt, class_maps, pix, traversible,
     labels: For each node in nodes_xyt returns a label of the class or -1 is
     unlabelled.
   """
-  g, nodes = convert_traversible_to_graph(traversible, ff_cost=ff_cost,
-                                          fo_cost=fo_cost, oo_cost=oo_cost,
-                                          connectivity=connectivity)
+  g, nodes = _convert_traversible_to_graph(traversible, ff_cost=ff_cost,
+    fo_cost=fo_cost, oo_cost=oo_cost, connectivity=connectivity)
 
   class_dist = np.zeros_like(class_maps*1.)
   n_classes = class_maps.shape[2]
@@ -204,7 +174,7 @@ def label_nodes_with_class_geodesic(nodes_xyt, class_maps, pix, traversible,
   for i in range(n_classes):
     # class_node_ids = np.where(class_maps__.ravel() == i)[0]
     class_node_ids = np.where(class_maps[:,:,i].ravel() > 0)[0]
-    dist_i = get_distance_node_list(g, class_node_ids, 'to', weights='wts')
+    dist_i = g.get_distance_node_list(class_node_ids, 'to', weights='wts')
     class_dist[:,:,i] = np.reshape(dist_i, class_dist[:,:,i].shape)
   class_map_geodesic = (class_dist <= pix)
   class_map_geodesic = np.reshape(class_map_geodesic, [-1, n_classes])
