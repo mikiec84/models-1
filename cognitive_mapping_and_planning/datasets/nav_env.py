@@ -37,9 +37,6 @@ import os
 import re
 import matplotlib.pyplot as plt
 
-import graph_tool as gt
-import graph_tool.topology
-
 from tensorflow.python.platform import gfile
 import logging
 import src.file_utils as fu
