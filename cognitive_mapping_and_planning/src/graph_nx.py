@@ -2,6 +2,36 @@ import numpy as np
 from src import utils
 import networkx as nx
 
+def label_nodes_with_class_geodesic(nodes_xyt, class_maps, pix, traversible,
+    ff_cost=1., fo_cost=1., oo_cost=1., connectivity=4):
+  raise NotImplemented
+
+def generate_graph(valid_fn_vec=None, sc=1., n_ori=6,
+  starting_location=(0, 0, 0), vis=False, directed=True):
+  
+  nxG = generate_graph_helper(valid_fn_vec=valid_fn_vec, sc=sc, 
+    n_ori=n_ori, starting_location=starting_location, vis=vis, 
+    directed=directed)
+  nodes_list = nxG.nodes()
+  nodes_array = np.array(nodes_list)
+  nodes_id = np.zeros((nodes_array.shape[0],), dtype=np.int64)
+  for i in range(nodes_array.shape[0]):
+    nodes_id[i] = i 
+  d = dict(itertools.izip(nodes_list, nodes_id))
+  nodes_to_id = d
+  return Graph(nxG), nodes_array, nodes_to_id
+
+class Graph():
+  def __init__(self, nxG):
+    self.nxG = nxG
+
+  def shortest_distance(self, source, target, weights=None, reversed=False, 
+    pred_map=False, max_dist=None):
+    raise NotImplemented
+
+  def get_distance_node_list(self, source_nodes, direction, weights=None):
+    raise NotImplemented
+
 def generate_graph_helper(valid_fn_vec=None, sc=1., n_ori=6,
   starting_location=(0, 0, 0), vis=False, directed=True):
   timer = utils.Timer()
@@ -38,7 +68,7 @@ def generate_graph_helper(valid_fn_vec=None, sc=1., n_ori=6,
         new_nodes.append(v)
       G.add_edge(n, v, action=a)
 
-  timer.toc(average=True, log_at=1, log_str='src.graph_utils.generate_graph')
+  timer.toc(average=True, log_at=1, log_str='src.graph_nx.generate_graph_helper')
   return (G)
 
 def _get_next_nodes_undirected(n, sc, n_ori):
