@@ -23,7 +23,7 @@ def generate_graph(valid_fn_vec=None, sc=1., n_ori=6,
 def convert_to_graph_tool(nxG):
   timer = utils.Timer()
   timer.tic()
-  gtG = Graph(directed=nxG.is_directed())
+  gtG = gt.Graph(directed=nxG.is_directed())
   gtG.ep['action'] = gtG.new_edge_property('int')
 
   nodes_list = nxG.nodes()
@@ -45,9 +45,9 @@ def convert_to_graph_tool(nxG):
   timer.toc(average=True, log_at=1, log_str='src.graph_nx.convert_to_graph_tool')
   return gtG, nodes_array, nodes_to_id
  
-class Graph(gt.Graph):
-  # def __init__(self, gtG):
-  #   self.gtG = gtG
+class Graph():
+  def __init__(self, gtG):
+    self.gtG = gtG
 
   # def num_edges(self):
   #   return self.gtG.num_edges()
@@ -55,14 +55,14 @@ class Graph(gt.Graph):
   def shortest_distance(self, source, target, weights=None, 
     reversed=False, pred_map=False, max_dist=None):
     if pred_map:
-      dist, pred = gt.topology.shortest_distance(gt.GraphView(self, reversed=reversed),
+      dist, pred = gt.topology.shortest_distance(gt.GraphView(self.gtG, reversed=reversed),
         source=self.vertex(int(source)), target=target, weights=weights,
         max_dist=max_dist, pred_map=pred_map)
       dist = np.array(dist.get_array())
       pred = np.array(pred.get_array())
       return dist, pred
     else:
-      dist = gt.topology.shortest_distance(gt.GraphView(self, reversed=reversed),
+      dist = gt.topology.shortest_distance(gt.GraphView(self.gtG, reversed=reversed),
         source=self.vertex(int(source)), target=target, weights=weights,
         max_dist=max_dist, pred_map=pred_map)
       dist = np.array(dist.get_array())
@@ -95,6 +95,19 @@ class Graph(gt.Graph):
     if weights is None:
       dist = dist-1
     return dist
+
+  def num_edges(self):
+    return self.gtG.num_edges()
+
+  def num_vertices(self):
+    return self.gtG.num_vertices()
+
+  def get_neighbours(self, c):
+    neigh = self.gtG.vertex(c).out_neighbours()
+    neigh = [int(x) for x in neigh]
+    neigh_edge = self.gtG.vertex(c).out_edges()
+    neigh_action = [self.gtG.ep['action'][e] for e in neigh_edge]
+    return neigh, neigh_edge, neigh_action 
 
 # Functions for semantically labelling nodes in the traversal graph.
 def _generate_lattice(sz_x, sz_y):
