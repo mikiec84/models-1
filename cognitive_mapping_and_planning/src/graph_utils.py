@@ -20,8 +20,8 @@ import numpy as np
 import itertools
 import src.utils as utils
 
-# import src.graph_gt as graph_lib
-import src.graph_nx as graph_lib
+import src.graph_gt as graph_lib
+# import src.graph_nx as graph_lib
 
 Graph = graph_lib.Graph
 label_nodes_with_class_geodesic = graph_lib.label_nodes_with_class_geodesic
@@ -63,7 +63,6 @@ def get_hardness_distribution(gtG, max_dist, min_dist, rng, trials, bins, nodes,
     end_node_id = rng.choice(num_nodes)
     gt_dist = gtG.shortest_distance(source=end_node_id, target=None, 
       max_dist=max_dist, reversed=True)
-    gt_dist = np.array(gt_dist.get_array())
     ind = np.where(np.logical_and(gt_dist <= max_dist, gt_dist >= min_dist))[0]
     gt_dist = gt_dist[ind]
     h_dist = heuristic_fn(ind, end_node_id)[:,0]
