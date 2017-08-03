@@ -295,20 +295,18 @@ class GridWorld():
     is_valid = np.all(np.concatenate((is_inside[:,np.newaxis], is_traversible),
                                      axis=1), axis=1)
     return is_valid
-
+  
   def get_feasible_actions(self, node_ids):
     """Returns the feasible set of actions from the current node."""
     a = np.zeros((len(node_ids), self.task_params.num_actions), dtype=np.int32)
     gtG = self.task.gtG
     next_node = []
     for i, c in enumerate(node_ids):
-      neigh = gtG.vertex(c).out_neighbours()
-      neigh_edge = gtG.vertex(c).out_edges()
+      neigh, neigh_edge, neigh_action = gtG.get_neighbours(c)
       nn = {}
-      for n, e in zip(neigh, neigh_edge):
-        _ = gtG.ep['action'][e]
-        a[i,_] = 1
-        nn[_] = int(n)
+      for n, ea in zip(neigh, neigh_action):
+        a[i,ea] = 1
+        nn[ea] = n
       next_node.append(nn)
     return a, next_node
 
