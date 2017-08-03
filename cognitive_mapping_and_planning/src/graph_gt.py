@@ -7,37 +7,47 @@ import itertools
 import graph_tool as gt
 import graph_tool.topology
 import graph_tool.generation 
-import src.utils as utils
 
+from src import utils
+from src import graph_nx
+
+def generate_graph(valid_fn_vec=None, sc=1., n_ori=6,
+  starting_location=(0, 0, 0), vis=False, directed=True):
+  nxG = graph_nx.generate_graph_helper(valid_fn_vec=valid_fn_vec, sc=sc, 
+    n_ori=n_ori, starting_location=starting_location, vis=vis, 
+    directed=directed)
+  gtG, nodes, nodes_to_id = convert_to_graph_tool(nxG)
+  gtG = Graph(gtG)
+  return gtG, nodes, nodes_to_id
+
+def convert_to_graph_tool(self, nxG):
+  timer = utils.Timer()
+  timer.tic()
+  gtG = gt.Graph(directed=nxG.is_directed())
+  gtG.ep['action'] = gtG.new_edge_property('int')
+
+  nodes_list = nxG.nodes()
+  nodes_array = np.array(nodes_list)
+
+  nodes_id = np.zeros((nodes_array.shape[0],), dtype=np.int64)
+
+  for i in range(nodes_array.shape[0]):
+    v = gtG.add_vertex()
+    nodes_id[i] = int(v)
+
+  # d = {key: value for (key, value) in zip(nodes_list, nodes_id)}
+  d = dict(itertools.izip(nodes_list, nodes_id))
+
+  for src, dst, data in nxG.edges_iter(data=True):
+    e = gtG.add_edge(d[src], d[dst])
+    gtG.ep['action'][e] = data['action']
+  nodes_to_id = d
+  timer.toc(average=True, log_at=1, log_str='src.graph_nx.convert_to_graph_tool')
+  return gtG, nodes_array, nodes_to_id
+ 
 class Graph():
-  def __init__(self, nxG):
-    self.gtG, self.nodes_array, nodes_to_id = \
-      self.convert_to_graph_tool(nxG)
-
-  def convert_to_graph_tool(self, nxG):
-    timer = utils.Timer()
-    timer.tic()
-    gtG = gt.Graph(directed=nxG.is_directed())
-    gtG.ep['action'] = gtG.new_edge_property('int')
-
-    nodes_list = nxG.nodes()
-    nodes_array = np.array(nodes_list)
-
-    nodes_id = np.zeros((nodes_array.shape[0],), dtype=np.int64)
-
-    for i in range(nodes_array.shape[0]):
-      v = gtG.add_vertex()
-      nodes_id[i] = int(v)
-
-    # d = {key: value for (key, value) in zip(nodes_list, nodes_id)}
-    d = dict(itertools.izip(nodes_list, nodes_id))
-
-    for src, dst, data in nxG.edges_iter(data=True):
-      e = gtG.add_edge(d[src], d[dst])
-      gtG.ep['action'][e] = data['action']
-    nodes_to_id = d
-    timer.toc(average=True, log_at=1, log_str='src.graph_utils.convert_to_graph_tool')
-    return gtG, nodes_array, nodes_to_id
+  def __init__(self, gtG):
+    self.gtG = gtG
   
   def shortest_distance(self, source, target, weights=None, 
     reversed=False, pred_map=False, max_dist=None):
