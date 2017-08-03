@@ -20,7 +20,8 @@ import numpy as np
 import itertools
 import src.utils as utils
 
-import src.graph_gt as graph_lib
+# import src.graph_gt as graph_lib
+import src.graph_nx as graph_lib
 
 Graph = graph_lib.Graph
 label_nodes_with_class_geodesic = graph_lib.label_nodes_with_class_geodesic
