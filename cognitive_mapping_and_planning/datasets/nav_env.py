@@ -47,15 +47,13 @@ import src.utils as utils
 import src.graph_utils as gu
 import src.map_utils as mu
 import src.depth_utils as du
+from src import GraphGT as Graph
 import render.swiftshader_renderer as sru
 from render.swiftshader_renderer import SwiftshaderRenderer
 import cv2
 
-label_nodes_with_class           = gu.label_nodes_with_class
-label_nodes_with_class_geodesic  = gu.label_nodes_with_class_geodesic
-get_distance_node_list           = gu.get_distance_node_list
-convert_to_graph_tool            = gu.convert_to_graph_tool
 generate_graph                   = gu.generate_graph
+label_nodes_with_class_geodesic  = gu.label_nodes_with_class_geodesic
 get_hardness_distribution        = gu.get_hardness_distribution
 rng_next_goal_rejection_sampling = gu.rng_next_goal_rejection_sampling
 rng_next_goal                    = gu.rng_next_goal
@@ -464,10 +462,10 @@ class MeshMapper(Building):
       origin_loc = get_graph_origin_loc(rng, self.traversible)
       self.task = utils.Foo(seed=seed, origin_loc=origin_loc,
                             n_ori=self.task_params.n_ori)
-      G = generate_graph(self.valid_fn_vec,
-                                  self.task_params.step_size, self.task.n_ori,
-                                  (0, 0, 0))
-      gtG, nodes, nodes_to_id = convert_to_graph_tool(G)
+      nxG = generate_graph(self.valid_fn_vec, self.task_params.step_size, 
+        self.task.n_ori, (0, 0, 0))
+      gtG = Graph(nxG)
+      nodes, nodes_to_id = gtG.nodes, gtG.nodes_to_id
       self.task.gtG = gtG
       self.task.nodes = nodes
       self.task.delta_theta = 2.0*np.pi/(self.task.n_ori*1.)
@@ -860,9 +858,10 @@ class NavigationEnv(GridWorld, Building):
       origin_loc = get_graph_origin_loc(rng, self.traversible)
       self.task = utils.Foo(seed=seed, origin_loc=origin_loc,
                             n_ori=self.task_params.n_ori)
-      G = generate_graph(self.valid_fn_vec, self.task_params.step_size,
-                         self.task.n_ori, (0, 0, 0))
-      gtG, nodes, nodes_to_id = convert_to_graph_tool(G)
+      nxG = generate_graph(self.valid_fn_vec, self.task_params.step_size,
+        self.task.n_ori, (0, 0, 0))
+      gtG = Graph(nxG)
+      nodes, nodes_to_id = gtG.nodes, gtG.nodes_to_id
       self.task.gtG = gtG
       self.task.nodes = nodes
       self.task.delta_theta = 2.0*np.pi/(self.task.n_ori*1.)
@@ -933,7 +932,7 @@ class NavigationEnv(GridWorld, Building):
         dists = []
         for i in range(len(self.class_map_names)):
           class_nodes_ = np.where(self.task.node_class_label[:,i])[0]
-          dists.append(get_distance_node_list(gtG, source_nodes=class_nodes_, direction='to'))
+          dists.append(gtG.get_distance_node_list(source_nodes=class_nodes_, direction='to'))
         self.task.dist_to_class = dists
         a_, b_ = np.where(self.task.node_class_label)
         self.task.class_nodes = np.concatenate((a_[:,np.newaxis], b_[:,np.newaxis]), axis=1)
