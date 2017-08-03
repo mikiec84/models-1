@@ -462,10 +462,8 @@ class MeshMapper(Building):
       origin_loc = get_graph_origin_loc(rng, self.traversible)
       self.task = utils.Foo(seed=seed, origin_loc=origin_loc,
                             n_ori=self.task_params.n_ori)
-      nxG = generate_graph(self.valid_fn_vec, self.task_params.step_size, 
-        self.task.n_ori, (0, 0, 0))
-      gtG = Graph(nxG)
-      nodes, nodes_to_id = gtG.nodes, gtG.nodes_to_id
+      gtG, nodes, nodes_to_id = generate_graph(self.valid_fn_vec, 
+        self.task_params.step_size, self.task.n_ori, (0, 0, 0))
       self.task.gtG = gtG
       self.task.nodes = nodes
       self.task.delta_theta = 2.0*np.pi/(self.task.n_ori*1.)
@@ -858,10 +856,8 @@ class NavigationEnv(GridWorld, Building):
       origin_loc = get_graph_origin_loc(rng, self.traversible)
       self.task = utils.Foo(seed=seed, origin_loc=origin_loc,
                             n_ori=self.task_params.n_ori)
-      nxG = generate_graph(self.valid_fn_vec, self.task_params.step_size,
-        self.task.n_ori, (0, 0, 0))
-      gtG = Graph(nxG)
-      nodes, nodes_to_id = gtG.nodes, gtG.nodes_to_id
+      gtG, nodes, nodes_to_id = generate_graph(self.valid_fn_vec, 
+        self.task_params.step_size, self.task.n_ori, (0, 0, 0))
       self.task.gtG = gtG
       self.task.nodes = nodes
       self.task.delta_theta = 2.0*np.pi/(self.task.n_ori*1.)
