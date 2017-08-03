@@ -986,7 +986,6 @@ class NavigationEnv(GridWorld, Building):
       rewards.append(reward)
     return new_node_ids, rewards
 
-
   def get_optimal_action(self, current_node_ids, step_number):
     """Returns the optimal action from the current node."""
     goal_number = step_number / self.task_params.num_steps
@@ -994,14 +993,12 @@ class NavigationEnv(GridWorld, Building):
     a = np.zeros((len(current_node_ids), self.task_params.num_actions), dtype=np.int32)
     d_dict = self.episode.dist_to_goal[goal_number]
     for i, c in enumerate(current_node_ids):
-      neigh = gtG.vertex(c).out_neighbours()
-      neigh_edge = gtG.vertex(c).out_edges()
-      ds = np.array([d_dict[i][int(x)] for x in neigh])
+      neigh, _, neigh_action = gtG.get_neighbours(c)
+      ds = np.array([d_dict[i][x] for x in neigh])
       ds_min = np.min(ds)
-      for i_, e in enumerate(neigh_edge):
+      for i_, ea in enumerate(neigh_action):
         if ds[i_] == ds_min:
-          _ = gtG.ep['action'][e]
-          a[i, _] = 1
+          a[i, ea] = 1
     return a
 
   def get_targets(self, current_node_ids, step_number):
