@@ -32,7 +32,7 @@ class Graph():
   def to_array(self, d, num_vertex, init_val):
     out = init_val * np.ones((num_vertex, ), dtype=type(init_val))
     for k, v in d.items():
-      out[k] = v[0]
+      out[k] = v
     return out
   
   def shortest_distance(self, source, target, weights=None, reversed=False, 
@@ -45,7 +45,7 @@ class Graph():
     else:
       g = self.nxG
     assert(target is None)
-    assert(pred_map is None)
+    assert(not pred_map)
     pred, dist = nx.dijkstra_predecessor_and_distance(g, source, cutoff=max_dist)
     dist = self.to_array(dist, self.num_vertex, np.int32(np.iinfo(np.int32).max))
     return dist
@@ -60,11 +60,8 @@ class Graph():
     return len(self.nxG.nodes())
   
   def get_neighbours(self, c):
-    self.nxG.neighbors(0)
-    neigh = self.gtG.vertex(c).out_neighbours()
-    neigh = [int(x) for x in neigh]
-    neigh_edge = self.gtG.vertex(c).out_edges()
-    neigh_action = [self.gtG.ep['action'][e] for e in neigh_edge]
+    neigh_edge = self.nxG.edges(data='action', nbunch=[c])
+    _, neigh, neigh_action = zip(*neigh_edge)
     return neigh, neigh_edge, neigh_action 
 
 def generate_graph_helper(valid_fn_vec=None, sc=1., n_ori=6,
