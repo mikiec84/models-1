@@ -10,8 +10,34 @@ import graph_tool.generation
 import src.utils as utils
 
 class Graph():
-  def __init__():
-    self.
+  def __init__(self, nxG):
+    self.gtG, self.nodes_array, nodes_to_id = \
+      self.convert_to_graph_tool(nxG)
+
+  def convert_to_graph_tool(self, nxG):
+    timer = utils.Timer()
+    timer.tic()
+    gtG = gt.Graph(directed=nxG.is_directed())
+    gtG.ep['action'] = gtG.new_edge_property('int')
+
+    nodes_list = nxG.nodes()
+    nodes_array = np.array(nodes_list)
+
+    nodes_id = np.zeros((nodes_array.shape[0],), dtype=np.int64)
+
+    for i in range(nodes_array.shape[0]):
+      v = gtG.add_vertex()
+      nodes_id[i] = int(v)
+
+    # d = {key: value for (key, value) in zip(nodes_list, nodes_id)}
+    d = dict(itertools.izip(nodes_list, nodes_id))
+
+    for src, dst, data in nxG.edges_iter(data=True):
+      e = gtG.add_edge(d[src], d[dst])
+      gtG.ep['action'][e] = data['action']
+    nodes_to_id = d
+    timer.toc(average=True, log_at=1, log_str='src.graph_utils.convert_to_graph_tool')
+    return gtG, nodes_array, nodes_to_id
   
   def shortest_distance(self, source, target, weights=None, 
     reversed=False, pred_map=False, max_dist=None):
@@ -296,32 +322,6 @@ def vis_G(G, ax, vertex_color='r', edge_color='b', r=None):
     y = XYT[-2]
     t = XYT[-1]
     ax.plot(x, y, vertex_color + '.')
-
-def convert_to_graph_tool(G):
-  timer = utils.Timer()
-  timer.tic()
-  gtG = gt.Graph(directed=G.is_directed())
-  gtG.ep['action'] = gtG.new_edge_property('int')
-
-  nodes_list = G.nodes()
-  nodes_array = np.array(nodes_list)
-
-  nodes_id = np.zeros((nodes_array.shape[0],), dtype=np.int64)
-
-  for i in range(nodes_array.shape[0]):
-    v = gtG.add_vertex()
-    nodes_id[i] = int(v)
-
-  # d = {key: value for (key, value) in zip(nodes_list, nodes_id)}
-  d = dict(itertools.izip(nodes_list, nodes_id))
-
-  for src, dst, data in G.edges_iter(data=True):
-    e = gtG.add_edge(d[src], d[dst])
-    gtG.ep['action'][e] = data['action']
-  nodes_to_id = d
-  timer.toc(average=True, log_at=1, log_str='src.graph_utils.convert_to_graph_tool')
-  return gtG, nodes_array, nodes_to_id
-
 
 def _rejection_sampling(rng, sampling_d, target_d, bins, hardness, M):
   bin_ind = np.digitize(hardness, bins)-1
