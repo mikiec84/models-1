@@ -79,8 +79,10 @@ citing the following paper:
     cp deps/assimp-src/lib/libassimp* .
     ```
 
-5.  graph-tool: We use [graph-tool](https://git.skewed.de/count0/graph-tool)
-    library for graph processing.
+5.  graph-tool (optional, but recommended): We use
+    [graph-tool](https://git.skewed.de/count0/graph-tool) library for graph
+    processing. If you do not want to install it, you can alternatively use
+    networkx, comment out appropriate lines at Line 23 in `src/graph_utils.py`.
     ```Shell
     mkdir -p deps
     # If the following git clone command fails, you can also download the source
