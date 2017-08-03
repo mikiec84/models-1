@@ -713,7 +713,7 @@ def _nav_env_reset_helper(type, rng, nodes, batch_size, gtG, max_dist,
       start_node_ids_, end_node_ids_, dist_, _, _, _, _ = rng_next_goal_rejection_sampling(
               input_nodes, batch_size, gtG, rng, max_dist, min_dist,
               max_compute, sampling_distribution, target_distribution, nodes,
-              n_ori, step_size, distribution_bins, rejection_sampling_M)
+              n_ori, step_size, distribution_bins, rejection_sampling_M, return_pred_map=False)
       if n == 0: start_node_ids = start_node_ids_
       goal_node_ids.append(end_node_ids_)
       dists.append(dist_)
@@ -786,13 +786,14 @@ class NavigationEnv(GridWorld, Building):
     out_path = os.path.join(self.logdir, '{:s}_{:d}_hardness.png'.format(self.building_name, seed))
     batch_size = 4000
     rng = np.random.RandomState(0)
-    start_node_ids, end_node_ids, dists, pred_maps, paths, hardnesss, gt_dists = \
+    start_node_ids, end_node_ids, dists, _, paths, hardnesss, gt_dists = \
       rng_next_goal_rejection_sampling(
           None, batch_size, self.task.gtG, rng, self.task_params.max_dist,
           self.task_params.min_dist, self.task_params.max_dist,
           self.task.sampling_distribution, self.task.target_distribution,
           self.task.nodes, self.task_params.n_ori, self.task_params.step_size,
-          self.task.distribution_bins, self.task.rejection_sampling_M)
+          self.task.distribution_bins, self.task.rejection_sampling_M, 
+          return_pred_map=False)
     bins = self.task.distribution_bins 
     n_bins = self.task.n_bins
     with plt.style.context('ggplot'):
