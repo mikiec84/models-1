@@ -56,14 +56,14 @@ class Graph():
     reversed=False, pred_map=False, max_dist=None):
     if pred_map:
       dist, pred = gt.topology.shortest_distance(gt.GraphView(self.gtG, reversed=reversed),
-        source=self.vertex(int(source)), target=target, weights=weights,
+        source=self.gtG.vertex(int(source)), target=target, weights=weights,
         max_dist=max_dist, pred_map=pred_map)
       dist = np.array(dist.get_array())
       pred = np.array(pred.get_array())
       return dist, pred
     else:
       dist = gt.topology.shortest_distance(gt.GraphView(self.gtG, reversed=reversed),
-        source=self.vertex(int(source)), target=target, weights=weights,
+        source=self.gtG.vertex(int(source)), target=target, weights=weights,
         max_dist=max_dist, pred_map=pred_map)
       dist = np.array(dist.get_array())
       return dist
