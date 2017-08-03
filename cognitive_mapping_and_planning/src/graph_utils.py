@@ -77,9 +77,9 @@ def get_hardness_distribution(gtG, max_dist, min_dist, rng, trials, bins, nodes,
   return hist
 
 def rng_next_goal_rejection_sampling(start_node_ids, batch_size, gtG, rng,
-                                     max_dist, min_dist, max_dist_to_compute,
-                                     sampling_d, target_d,
-                                     nodes, n_ori, step_size, bins, M):
+  max_dist, min_dist, max_dist_to_compute, sampling_d, target_d, nodes, n_ori,
+  step_size, bins, M, return_pred_map):
+  
   sample_start_nodes = start_node_ids is None
   dists = []; pred_maps = []; end_node_ids = []; start_node_ids_ = [];
   hardnesss = []; gt_dists = [];
@@ -110,8 +110,13 @@ def rng_next_goal_rejection_sampling(start_node_ids, batch_size, gtG, rng,
         done = True
 
     # Compute distance from end node to all nodes, to return.
-    dist, pred_map = gtG.shortest_distance(source=end_node_id, target=None, 
-      max_dist=max_dist_to_compute, pred_map=True, reversed=True)
+    if return_pred_map:
+      dist, pred_map = gtG.shortest_distance(source=end_node_id, target=None, 
+        max_dist=max_dist_to_compute, pred_map=return_pred_map, reversed=True)
+    else:
+      dist = gtG.shortest_distance(source=end_node_id, target=None, 
+        max_dist=max_dist_to_compute, pred_map=return_pred_map, reversed=True)
+      pred_map = None
     hardnesss.append(hardness); dists.append(dist); pred_maps.append(pred_map);
     start_node_ids_.append(start_node_id); end_node_ids.append(end_node_id);
     gt_dists.append(gt_dist);
